@@ -10,13 +10,16 @@ const authRoutes = require('./routes/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const BASE_PATH = process.env.BASE_PATH || '';
+
+app.locals.basePath = BASE_PATH;
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.set('layout', 'layout');
 app.use(ejsLayouts);
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(BASE_PATH, express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -34,8 +37,8 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/', authRoutes);
-app.use('/', indexRoutes);
+app.use(BASE_PATH, authRoutes);
+app.use(BASE_PATH, indexRoutes);
 
 app.use((req, res) => {
   res.status(404).render('error', { title: '404', message: 'Page not found', path: '' });
@@ -47,5 +50,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Wazuh Dashboard running at http://localhost:${PORT}`);
+  console.log(`Wazuh Dashboard running at http://localhost:${PORT}${BASE_PATH}`);
 });

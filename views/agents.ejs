@@ -1,6 +1,6 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
   <h4 class="mb-0"><i class="bi bi-pc-display text-info"></i> Agents</h4>
-  <form class="d-flex gap-2" method="GET" action="/agents">
+  <form class="d-flex gap-2" method="GET" action="<%= basePath %>/agents">
     <select name="status" class="form-select form-select-sm" style="width: auto;">
       <option value="">All Status</option>
       <option value="active" <%= status === 'active' ? 'selected' : '' %>>Active</option>
@@ -9,7 +9,7 @@
     </select>
     <input type="text" name="search" class="form-control form-control-sm" placeholder="Search agents..." value="<%= search %>" style="width: 200px;">
     <button type="submit" class="btn btn-sm btn-outline-info">Filter</button>
-    <% if (search || status) { %><a href="/agents" class="btn btn-sm btn-outline-secondary">Clear</a><% } %>
+    <% if (search || status) { %><a href="<%= basePath %>/agents" class="btn btn-sm btn-outline-secondary">Clear</a><% } %>
   </form>
 </div>
 
@@ -43,7 +43,7 @@
           <td class="small"><%= a.os?.name || a.os || '-' %></td>
           <td class="small"><%= a.version || '-' %></td>
           <td class="small text-nowrap"><%= a.lastKeepAlive || '-' %></td>
-          <td><a href="/agents/<%= a.id %>" class="btn btn-sm btn-outline-info">Detail</a></td>
+          <td><a href="<%= basePath %>/agents/<%= a.id %>" class="btn btn-sm btn-outline-info">Detail</a></td>
         </tr>
         <% }); %>
       </tbody>

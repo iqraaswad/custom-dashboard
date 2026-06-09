@@ -5,7 +5,7 @@ const router = express.Router();
 
 function requireAuth(req, res, next) {
   if (req.session.authenticated) return next();
-  if (req.accepts('html')) return res.redirect('/login');
+  if (req.accepts('html')) return res.redirect(req.app.locals.basePath + '/login');
   return res.status(401).json({ error: 'Unauthorized' });
 }
 
