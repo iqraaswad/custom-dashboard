@@ -1,0 +1,43 @@
+<div class="d-flex align-items-center gap-2 mb-4">
+  <a href="/agents" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+  <h4 class="mb-0"><i class="bi bi-pc-display text-info"></i> Agent: <%= agent.name %></h4>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card chart-card">
+      <div class="card-header bg-transparent border-secondary">
+        <h6 class="mb-0">Agent Info</h6>
+      </div>
+      <div class="card-body">
+        <dl class="row mb-0 small">
+          <dt class="col-5 text-secondary">ID</dt><dd class="col-7"><code><%= agent.id %></code></dd>
+          <dt class="col-5 text-secondary">Name</dt><dd class="col-7"><%= agent.name %></dd>
+          <dt class="col-5 text-secondary">Status</dt>
+          <dd class="col-7">
+            <span class="badge bg-<%= agent.status === 'active' ? 'success' : agent.status === 'disconnected' ? 'danger' : 'secondary' %>"><%= agent.status %></span>
+          </dd>
+          <dt class="col-5 text-secondary">IP</dt><dd class="col-7"><%= agent.ip || '-' %></dd>
+          <dt class="col-5 text-secondary">OS</dt><dd class="col-7"><%= agent.os?.name || agent.os || '-' %></dd>
+          <dt class="col-5 text-secondary">OS Platform</dt><dd class="col-7"><%= agent.os?.platform || '-' %></dd>
+          <dt class="col-5 text-secondary">Version</dt><dd class="col-7"><%= agent.version || '-' %></dd>
+          <dt class="col-5 text-secondary">Manager</dt><dd class="col-7"><%= agent.manager || '-' %></dd>
+          <dt class="col-5 text-secondary">Node Name</dt><dd class="col-7"><%= agent.node_name || '-' %></dd>
+          <dt class="col-5 text-secondary">Last Keep Alive</dt><dd class="col-7"><%= agent.lastKeepAlive || '-' %></dd>
+          <dt class="col-5 text-secondary">Date Add</dt><dd class="col-7"><%= agent.dateAdd || '-' %></dd>
+          <dt class="col-5 text-secondary">Config Sum</dt><dd class="col-7"><code class="small"><%= agent.configSum || '-' %></code></dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="card chart-card">
+      <div class="card-header bg-transparent border-secondary">
+        <h6 class="mb-0">Full Agent Data (Raw)</h6>
+      </div>
+      <div class="card-body">
+        <pre class="text-secondary small" style="max-height: 400px; overflow-y: auto;"><%= JSON.stringify(agent, null, 2) %></pre>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,105 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="mb-0"><i class="bi bi-graph-up text-info"></i> Overview</h4>
+  <span class="text-secondary small">System-wide security overview</span>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card stat-card border-info">
+      <div class="card-body text-center">
+        <p class="stat-label">Total Agents</p>
+        <h2 class="stat-value text-info"><%= summary.totalAgents %></h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card stat-card border-success">
+      <div class="card-body text-center">
+        <p class="stat-label">Active</p>
+        <h2 class="stat-value text-success"><%= summary.activeAgents %></h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card stat-card border-danger">
+      <div class="card-body text-center">
+        <p class="stat-label">Disconnected</p>
+        <h2 class="stat-value text-danger"><%= summary.disconnectedAgents %></h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card stat-card border-warning">
+      <div class="card-body text-center">
+        <p class="stat-label">Manager Nodes</p>
+        <h2 class="stat-value text-warning"><%= summary.managerNodes %></h2>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-md-6">
+    <div class="card chart-card">
+      <div class="card-header bg-transparent border-secondary">
+        <h6 class="mb-0"><i class="bi bi-bar-chart-fill"></i> Alert Level Distribution</h6>
+      </div>
+      <div class="card-body">
+        <canvas id="alertDistChart" height="280"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card chart-card">
+      <div class="card-header bg-transparent border-secondary">
+        <h6 class="mb-0"><i class="bi bi-pie-chart-fill"></i> Agents by Group</h6>
+      </div>
+      <div class="card-body">
+        <canvas id="groupDistChart" height="280"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% if (!summary.connected) { %>
+<div class="alert alert-warning"><i class="bi bi-exclamation-triangle-fill"></i> Wazuh Manager connection failed. Verify your configuration.</div>
+<% } %>
+
+<script>
+  const levels = <%- JSON.stringify(levelDist || []) %>;
+  new Chart(document.getElementById('alertDistChart'), {
+    type: 'bar',
+    data: {
+      labels: levels.map(l => 'Level ' + l.level),
+      datasets: [{
+        label: 'Alert Count',
+        data: levels.map(l => l.count),
+        backgroundColor: levels.map(l => l.level >= 12 ? '#da3633' : l.level >= 8 ? '#d29922' : l.level >= 4 ? '#58a6ff' : '#6e7681'),
+        borderRadius: 6
+      }]
+    },
+    options: {
+      scales: { y: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' } }, x: { ticks: { color: '#8b949e' }, grid: { display: false } } },
+      plugins: { legend: { labels: { color: '#8b949e' } } },
+      maintainAspectRatio: false
+    }
+  });
+
+  const groups = <%- JSON.stringify(groupData || []) %>;
+  new Chart(document.getElementById('groupDistChart'), {
+    type: 'doughnut',
+    data: {
+      labels: groups.map(g => g.name || 'default'),
+      datasets: [{
+        data: groups.map(g => g.count),
+        backgroundColor: ['#58a6ff', '#238636', '#da3633', '#d29922', '#a371f7', '#db6d28', '#3fb950'],
+        borderColor: '#161b22',
+        borderWidth: 2
+      }]
+    },
+    options: {
+      plugins: { legend: { labels: { color: '#8b949e' } } },
+      maintainAspectRatio: false
+    }
+  });
+</script>

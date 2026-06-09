@@ -1,0 +1,200 @@
+<% if (!summary.connected) { %>
+<div class="alert alert-warning">
+  <i class="bi bi-exclamation-triangle-fill"></i>
+  Could not connect to Wazuh Manager at <%= process.env.WAZUH_API_URL %>.
+  <% if (summary.error) { %><br><small><%= summary.error %></small><% } %>
+  <br><small>Check your <code>.env</code> configuration and ensure the Wazuh Manager API is running.</small>
+</div>
+<% } %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="mb-0"><i class="bi bi-speedometer2 text-info"></i> Security Dashboard</h4>
+  <span class="text-secondary small" id="updateTime"></span>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card stat-card border-info">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <p class="stat-label">Total Agents</p>
+            <h3 class="stat-value text-info"><%= summary.totalAgents %></h3>
+          </div>
+          <i class="bi bi-pc-display stat-icon text-info opacity-25"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card stat-card border-success">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <p class="stat-label">Active Agents</p>
+            <h3 class="stat-value text-success"><%= summary.activeAgents %></h3>
+          </div>
+          <i class="bi bi-check-circle stat-icon text-success opacity-25"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card stat-card border-danger">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <p class="stat-label">Disconnected</p>
+            <h3 class="stat-value text-danger"><%= summary.disconnectedAgents %></h3>
+          </div>
+          <i class="bi bi-x-circle stat-icon text-danger opacity-25"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card stat-card border-warning">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <p class="stat-label">Manager Nodes</p>
+            <h3 class="stat-value text-warning"><%= summary.managerNodes %></h3>
+          </div>
+          <i class="bi bi-hdd-stack stat-icon text-warning opacity-25"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card chart-card">
+      <div class="card-header bg-transparent border-secondary">
+        <h6 class="mb-0"><i class="bi bi-pie-chart"></i> Agent Status</h6>
+      </div>
+      <div class="card-body">
+        <canvas id="agentStatusChart" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card chart-card">
+      <div class="card-header bg-transparent border-secondary">
+        <h6 class="mb-0"><i class="bi bi-bar-chart"></i> Alerts by Level</h6>
+      </div>
+      <div class="card-body">
+        <canvas id="alertsLevelChart" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card chart-card">
+      <div class="card-header bg-transparent border-secondary">
+        <h6 class="mb-0"><i class="bi bi-diagram-3"></i> Agents by Group</h6>
+      </div>
+      <div class="card-body">
+        <canvas id="groupChart" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% if (topAlerts.length > 0) { %>
+<div class="card chart-card mt-3">
+  <div class="card-header bg-transparent border-secondary d-flex justify-content-between align-items-center">
+    <h6 class="mb-0"><i class="bi bi-exclamation-triangle text-danger"></i> Recent Alerts</h6>
+    <a href="/alerts" class="btn btn-sm btn-outline-info">View All</a>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-dark table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Level</th>
+          <th>Rule</th>
+          <th>Description</th>
+          <th>Agent</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% topAlerts.forEach(function(a) { %>
+        <tr>
+          <td class="small text-nowrap"><%= a.timestamp || '-' %></td>
+          <td><span class="badge bg-<%= (a.level || (a.rule && a.rule.level)) >= 12 ? 'danger' : (a.level || (a.rule && a.rule.level)) >= 8 ? 'warning' : 'info' %>"><%= a.level || (a.rule && a.rule.level) || '-' %></span></td>
+          <td class="small"><%= (a.rule && a.rule.description) || '-' %></td>
+          <td class="small"><%= (a.rule && a.rule.mail !== undefined) ? 'Yes' : 'No' %></td>
+          <td class="small"><%= a.agent?.name || a.agent || '-' %></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<% } %>
+
+<script>
+  const ctxAgent = document.getElementById('agentStatusChart');
+  if (ctxAgent) {
+    new Chart(ctxAgent, {
+      type: 'doughnut',
+      data: {
+        labels: ['Active', 'Disconnected', 'Never Connected'],
+        datasets: [{
+          data: [<%= summary.activeAgents %>, <%= summary.disconnectedAgents %>, <%= summary.neverConnectedAgents %>],
+          backgroundColor: ['#238636', '#da3633', '#6e7681'],
+          borderColor: '#161b22',
+          borderWidth: 2
+        }]
+      },
+      options: { plugins: { legend: { labels: { color: '#8b949e' } } }, maintainAspectRatio: false }
+    });
+  }
+
+  const ctxLevel = document.getElementById('alertsLevelChart');
+  if (ctxLevel) {
+    const levels = <%- JSON.stringify(levelDist || []) %>;
+    new Chart(ctxLevel, {
+      type: 'bar',
+      data: {
+        labels: levels.map(l => 'Level ' + l.level),
+        datasets: [{
+          label: 'Alert Count',
+          data: levels.map(l => l.count),
+          backgroundColor: levels.map(l => l.level >= 12 ? '#da3633' : l.level >= 8 ? '#d29922' : '#58a6ff'),
+          borderRadius: 4
+        }]
+      },
+      options: {
+        scales: { y: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' } }, x: { ticks: { color: '#8b949e' }, grid: { display: false } } },
+        plugins: { legend: { display: false } },
+        maintainAspectRatio: false
+      }
+    });
+  }
+
+  const ctxGroup = document.getElementById('groupChart');
+  if (ctxGroup) {
+    const groups = <%- JSON.stringify(groupData || []) %>;
+    new Chart(ctxGroup, {
+      type: 'bar',
+      data: {
+        labels: groups.map(g => g.name || 'default'),
+        datasets: [{
+          label: 'Agents',
+          data: groups.map(g => g.count),
+          backgroundColor: '#58a6ff',
+          borderRadius: 4
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        scales: { x: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' } }, y: { ticks: { color: '#8b949e' }, grid: { display: false } } },
+        plugins: { legend: { display: false } },
+        maintainAspectRatio: false
+      }
+    });
+  }
+
+  document.getElementById('updateTime').textContent = 'Updated: ' + new Date().toLocaleString();
+</script>
